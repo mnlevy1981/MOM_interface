@@ -27,32 +27,49 @@ logger = logging.getLogger(__name__)
 
 # prepares the input files of a case and places in rundir:
 def prep_input(case):
-    casename        = case.get_value("CASE")
-    Buildconf       = case.get_value("CASEBUILD")
-    rundir          = case.get_value("RUNDIR")
-    gridname        = case.get_value("GRID")
-    ocn_gridname    = case.get_value("OCN_GRID")
-    ocn_ncpl       = case.get_value("OCN_NCPL")
-    srcroot         = case.get_value("SRCROOT")
-    din_loc_root    = case.get_value("DIN_LOC_ROOT")
-    testcase = case.get_value("TEST")
-    hist_n = case.get_value("HIST_N")
-    hist_option = case.get_value("HIST_OPTION")
+    casename     = case.get_value("CASE")
+    Buildconf    = case.get_value("CASEBUILD")
+    rundir       = case.get_value("RUNDIR")
+    gridname     = case.get_value("GRID")
+    ocn_gridname = case.get_value("OCN_GRID")
+    ocn_ncpl     = case.get_value("OCN_NCPL")
+    srcroot      = case.get_value("SRCROOT")
+    din_loc_root = case.get_value("DIN_LOC_ROOT")
+    testcase     = case.get_value("TEST")
+    hist_n       = case.get_value("HIST_N")
+    hist_option  = case.get_value("HIST_OPTION")
     # diag_table handled below
-    input_files     = ["input.nml", "MOM_input"]
+    input_files  = ["input.nml", "MOM_input"]
+
+    # determine input category (B,C, or G):
+    # this is needed to determine which input templates are to be copied for a given grid.
+    input_cat  = None
+    comp_ice   = case.get_value("COMP_ICE")
+    comp_atm   = case.get_value("COMP_ATM")
+    active_ice = (comp_ice=="cice")
+    active_atm = (comp_atm=="cam")
+
+    if (not (active_ice or active_atm)):
+        input_cat = "C"
+    elif (active_ice and not active_atm):
+        input_cat = "G"
+    elif (active_ice and active_atm):
+        input_cat = "B"
+    else:
+        expect(False, "Cannot determine input category for this compset.")
 
     # Make sure that rundir exists. If not, make it:
     if not os.path.exists(rundir):
         os.makedirs(rundir)
 
     # check if input file templates are available for the given ocn grid:
-    available_grids = ["gx1v6","tx0.66v1"]
-    if not (ocn_gridname in available_grids):
-        expect(False, "Couldn't find input files for %s" % (gridname))
+    if not (os.path.exists(os.path.join(srcroot,"components", "mom", "input_templates", ocn_gridname, input_cat))):
+        expect(False, "Couldn't find input files for ocean grid '%s' and input category '%s' at '%s'" \
+                      %(ocn_gridname,input_cat,os.path.join(srcroot,"components","mom","input_templates")))
 
     # copy template input files:
     logger.info("\tCopying input files for %s"%(ocn_gridname))
-    input_templates_dir = os.path.join(srcroot,"components","mom","input_templates",ocn_gridname)
+    input_templates_dir = os.path.join(srcroot, "components", "mom", "input_templates", ocn_gridname, input_cat)
     for input_file_name in input_files:
         output_file_name = input_file_name
         input_file_path = os.path.join(input_templates_dir,input_file_name)
@@ -64,6 +81,7 @@ def prep_input(case):
 
     # process diag_table: (replace all the instances of "CASENAME" in data_table with the actual case name)
     #TODO - need to add other hist_option possibilities and use in runs as well as tests
+
     if hist_option == "ndays":
         hist_option = "days"
     elif hist_option == "nsteps":
@@ -97,7 +115,7 @@ def prep_input(case):
     # process MOM_input: (replace all the instances of "DIN_LOC_ROOT" with the local input directory)
     with open(os.path.join(rundir,"MOM_input"), 'r') as MOM_input:
          inputdir = os.path.join(din_loc_root,'ocn','mom',ocn_gridname)
-         MOM_input_data = MOM_input.read().replace('DIN_LOC_ROOT',inputdir)
+         MOM_input_data = MOM_input.read().replace('$DIN_LOC_ROOT',inputdir)
     with open(os.path.join(rundir,"MOM_input"), 'w') as MOM_input:
         MOM_input.write(MOM_input_data)
 
@@ -111,8 +129,8 @@ def prep_input(case):
 
     # generate input_data_list:
     with open(os.path.join(input_templates_dir,"mom.input_data_list"), 'r') as input_data_list:
-        idl_data = input_data_list.read().replace('DIN_LOC_ROOT',din_loc_root)\
-                                         .replace('OCN_GRID',ocn_gridname)
+        idl_data = input_data_list.read().replace('$DIN_LOC_ROOT',din_loc_root)\
+                                         .replace('$OCN_GRID',ocn_gridname)
     with open(os.path.join(Buildconf,"mom.input_data_list"), 'w') as input_data_list:
         input_data_list.write(idl_data)
 
