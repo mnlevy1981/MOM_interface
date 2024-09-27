@@ -1,8 +1,8 @@
 [submodule "MOM6"]
   path = MOM6
-  url = https://github.com/NCAR/MOM6.git
-  fxDONOTUSEurl = https://github.com/NCAR/MOM6.git
-    fxtag = dev/ncar_240923
+  url = https://github.com/mnlevy1981/MOM6.git
+  fxDONOTUSEurl = https://github.com/mnlevy1981/MOM6.git
+    fxtag = avoid_zero_chl
     fxrequired = AlwaysRequired
 
 [submodule "stochastic_physics"]
@@ -14,8 +14,8 @@
 
 [submodule "MARBL"]
   path = externals/MARBL
-  url = https://github.com/marbl-ecosys/MARBL.git
-  fxDONOTUSEurl = https://github.com/marbl-ecosys/MARBL.git
-    fxtag = marbl0.47.1
+  url = https://github.com/mnlevy1981/MARBL.git
+  fxDONOTUSEurl = https://github.com/mnlevy1981/MARBL.git
+    fxtag = bugfix/nhx_surf_emis_may_divide_by_zero
     fxrequired = AlwaysRequired
 
