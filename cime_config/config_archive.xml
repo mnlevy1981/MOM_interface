@@ -8,8 +8,8 @@
          h.(static|ocean_geometry)[._optional instance number].nc[.optional tile number] -->
     <hist_file_extension>h\.(static|ocean_geometry)(\._\d*)?\.nc(\.\d*)?$</hist_file_extension>
     <!-- match filenames of the form
-         h.bgc.*[._optional instance number].nc -->
-    <hist_file_extension>h\.bgc\..*?.?[_\d+]+.nc$</hist_file_extension>
+         h.bgc.[.optional stream name][._optional instance number].(date string).nc[.optional tile number] -->
+    <hist_file_extension>h\.bgc(\.\w+)?(\._\d*)?\.[-\d+]+\.nc(\.\d*)?$</hist_file_extension>
     <!-- match filenames of the form
          ic.(date string)[._optional instance number].nc[.optional tile number] -->
     <hist_file_extension>ic.[-\d+]+(\._\d*)?\.nc(\.\d*)?$</hist_file_extension>
